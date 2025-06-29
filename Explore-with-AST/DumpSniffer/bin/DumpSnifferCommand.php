@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once 'Analyzer.php';
+require_once '../src/Analyzer.php';
 
 $filename = $argv[1] ?? null;
 
@@ -10,7 +10,7 @@ if (!$filename || !file_exists($filename)) {
     fwrite(STDERR, "Usage: php DumpSniffer.php <file-to-analyze.php>\n");
     exit(1);
 }
-$codeToAnalyse = file_get_contents('Code.php');
+$codeToAnalyse = file_get_contents($filename);
 $version = ast\get_supported_versions()[0];
 $ast = ast\parse_code($codeToAnalyse, $version);
 if (!$ast) {
