@@ -62,25 +62,3 @@ function analyzeAst(mixed $node, bool $isInsideFunctionScope = false): Generator
         }
     }
 }
-
-
-$codeToAnalyse = <<<'PHP'
-<?php
-
-function helloWorld(string $name) {
-    echo 'Hello'. $name;
-    dd($name);
-    var_dump($name);
-}
-
-helloWorld('Mary');
-PHP;
-$version = ast\get_supported_versions()[0];
-$ast = ast\parse_code($codeToAnalyse, $version);
-if (!$ast) {
-    exit("Error parsing the code");
-}
-
-foreach (analyzeAst($ast) as $issue) {
-    echo "[Line {$issue['lineno']}] {$issue['message']}\n";
-}
