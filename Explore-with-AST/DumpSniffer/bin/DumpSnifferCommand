@@ -1,8 +1,11 @@
+#!/usr/bin/env php
 <?php
 
 declare(strict_types=1);
 
-require_once '../src/Analyzer.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use DumpSniffer\Analyzer;
 
 $filename = $argv[1] ?? null;
 
@@ -11,13 +14,14 @@ if (!$filename || !file_exists($filename)) {
     exit(1);
 }
 $codeToAnalyse = file_get_contents($filename);
-$version = ast\get_supported_versions()[0];
-$ast = ast\parse_code($codeToAnalyse, $version);
+$version = \ast\get_supported_versions()[0];
+$ast = \ast\parse_code($codeToAnalyse, $version);
 if (!$ast) {
     fwrite(STDERR, "Error parsing the code\n");
     exit(1);
 }
 
-foreach (analyzeAst($ast) as $issue) {
+$analyzer = new Analyzer();
+foreach ($analyzer->analyzeAst($ast) as $issue) {
     echo "[Line {$issue['lineno']}] {$issue['message']}\n";
 }

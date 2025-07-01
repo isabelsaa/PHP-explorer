@@ -1,0 +1,21 @@
+{
+    "name": "isaa/explore-with-ast",
+    "description": "Its a microtool to detect debug functions in source code",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "isabelsaa",
+            "email": "isabel89@protonmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "ext-ast": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "DumpSniffer\\": "DumpSniffer/src"
+        }
+    }
+}
