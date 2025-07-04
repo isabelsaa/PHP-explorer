@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use DumpSniffer\Analyzer;
 
-
 dataset('prohibited functions', [
     'dd detection' =>
         [
