@@ -3,38 +3,66 @@
 declare(strict_types=1);
 
 namespace DumpSniffer;
+
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+
 final class DumpSnifferCommand
 {
-    public function run(array $argv): int
+    public function run(array $arguments): int
     {
-        $filename = $argv[1] ?? null;
+        $argumentPath = $arguments[1] ?? null;
 
-        if (!$filename || !file_exists($filename)) {
+        if (!$argumentPath || !file_exists($argumentPath)) {
             $this->printUsage();
             return 1;
         }
 
-        $ast = $this->parseFileToAst($filename);
-        if (!$ast) {
-            return 1;
+        $paths = is_dir($argumentPath)
+            ? $this->searchRecursiveAllFiles($argumentPath)
+            : [$argumentPath];
+        foreach ($paths as $path) {
+            echo "Analyzing: {$path}\n";
+            $ast = $this->parseFileToAst($path);
+            if (!$ast) {
+                return 1;
+            }
+            $analyzer = new Analyzer();
+            $issues = $analyzer->analyzeAst($ast);
+            $this->printIssues($issues);
         }
-
-        $analyzer = new Analyzer();
-        $issues = $analyzer->analyzeAst($ast);
-        $this->printIssues($issues);
 
         return 0;
     }
 
+    private function searchRecursiveAllFiles(string $directory): array
+    {
+        $paths = [];
+
+        $directoryIterator = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
+        $iterator = new RecursiveIteratorIterator($directoryIterator);
+        /** @var SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $paths[] = $file->getRealPath();
+            }
+        }
+
+        return $paths;
+    }
+
     private function printUsage(): void
     {
-        echo("Usage: php DumpSniffer.php <file-to-analyze.php>\n");
+        echo("Usage: php DumpSniffer.php <file-or-directory-to-analyze.php>\n");
     }
 
 
     private function parseFileToAst(string $filename): ?\ast\Node
     {
         $codeToAnalyze = file_get_contents($filename);
+
         if ($codeToAnalyze === false) {
             fwrite(STDERR, "Error reading the file\n");
             return null;
