@@ -11,5 +11,5 @@ it('shows usage message when no filename is provided', function () {
     $output = ob_get_clean();
 
     expect($exitCode)->toBe(1)
-        ->and($output)->toContain('Usage: php DumpSniffer.php <file-to-analyze.php>');
+        ->and($output)->toContain('Usage: php DumpSniffer.php <file-or-directory-to-analyze.php>');
 });
