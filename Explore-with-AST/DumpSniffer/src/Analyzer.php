@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DumpSniffer;
 
+use DumpSniffer\Entity\Issue;
+
 final class Analyzer
 {
     private const FUNCTION_DECLARATION_KIND = \ast\AST_FUNC_DECL;
@@ -18,7 +20,7 @@ final class Analyzer
         return $node->kind === self::FUNCTION_DECLARATION_KIND;
     }
 
-    public function isProhibitedFunctionCall(mixed $node): ?array
+    public function isProhibitedFunctionCall(mixed $node): ?Issue
     {
         if ($node->kind !== self::FUNCTION_CALL_KIND) {
             return null;
@@ -32,10 +34,7 @@ final class Analyzer
             $functionName = strtolower($nameNode->children['name']);
 
             if (in_array($functionName, self::PROHIBITED_FUNCTIONS, true)) {
-                return [
-                    'message' => "There is a \"$functionName()\" detected, please remove it",
-                    'lineno' => $node->lineno,
-                ];
+                return new Issue($node->lineno, "There is a \"$functionName()\" , please remove it.");
             }
         }
 
@@ -49,12 +48,8 @@ final class Analyzer
             if ($this->isFunctionDeclaration($node)) {
                 $isInsideFunctionScope = true;
             }
-
             if ($node->kind === self::ECHO_KIND && $isInsideFunctionScope) {
-                yield [
-                    'message' => 'There is an "echo", please remove it.',
-                    'lineno' => $node->lineno,
-                ];
+                yield new Issue($node->lineno, 'There is an "echo", please remove it.');
             }
 
             if ($issue = $this->isProhibitedFunctionCall($node)) {

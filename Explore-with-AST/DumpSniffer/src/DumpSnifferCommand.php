@@ -82,7 +82,7 @@ final readonly class DumpSnifferCommand
     private function printIssues(\Generator $issues): void
     {
         foreach ($issues as $issue) {
-            echo "[Line {$issue['lineno']}] {$issue['message']}\n";
+            echo "[Line {$issue->lineno}] {$issue->message}\n";
         }
     }
 }
