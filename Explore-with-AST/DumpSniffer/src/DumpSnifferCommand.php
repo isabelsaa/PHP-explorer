@@ -9,8 +9,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-final class DumpSnifferCommand
+final readonly class DumpSnifferCommand
 {
+    public function __construct(private Analyzer $analyzer = new Analyzer()) {}
     public function run(array $arguments): int
     {
         $argumentPath = $arguments[1] ?? null;
@@ -29,8 +30,7 @@ final class DumpSnifferCommand
             if (!$ast) {
                 return 1;
             }
-            $analyzer = new Analyzer();
-            $issues = $analyzer->analyzeAst($ast);
+            $issues = $this->analyzer->analyzeAst($ast);
             $this->printIssues($issues);
         }
 
