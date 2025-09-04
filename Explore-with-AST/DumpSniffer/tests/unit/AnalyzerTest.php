@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use DumpSniffer\Analyzer;
+use DumpSniffer\Entity\Issue;
 
 dataset('prohibited functions', [
     'dd detection' =>
@@ -15,10 +16,8 @@ dataset('prohibited functions', [
         }
         functionWithDD('Mary');
         PHP,
-            'expected' => [
-                'message' => 'There is a "dd()" detected, please remove it',
-                'lineno' => 4,
-            ],
+            'expected' => [new Issue(4, 'There is a "dd()" , please remove it.')]
+
         ],
     'var_dump detection' =>
         [
@@ -31,10 +30,7 @@ dataset('prohibited functions', [
         }
         functionWithVarDump('Mary');
         PHP,
-            'expected' => [
-                'message' => 'There is a "var_dump()" detected, please remove it',
-                'lineno' => 5,
-            ],
+            'expected' => [new Issue(5, 'There is a "var_dump()" , please remove it.')]
         ],
     'echo detection' =>
         [
@@ -47,10 +43,7 @@ dataset('prohibited functions', [
         }
         functionWithEcho('Mary');
         PHP,
-            'expected' => [
-                'message' => 'There is an "echo", please remove it.',
-                'lineno' => 5,
-            ],
+            'expected' => [new Issue(5, 'There is an "echo", please remove it.')]
         ],
     'clean function' => [
         'code' => <<<'PHP'
@@ -63,17 +56,18 @@ dataset('prohibited functions', [
         cleanedFunction('Mary');
         PHP,
         'expected' => null,
-    ],
-]);
+
+    ],]);
 
 it('Detects forgotten dumps and echoes', function (string $code, ?array $expected) {
     $version = \ast\get_supported_versions()[0];
     $ast = \ast\parse_code($code, $version);
     $analyzer = new Analyzer();
     $result = iterator_to_array($analyzer->analyzeAst($ast));
+
     $assertion = $expected === null
         ? fn() => expect($result)->toBeEmpty()
-        : fn() => expect($result)->toContain($expected);
+        : fn() => expect($result)->toEqual($expected);
 
     $assertion();
 })->with('prohibited functions');
